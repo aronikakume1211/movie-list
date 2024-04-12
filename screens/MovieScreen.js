@@ -6,6 +6,8 @@ import { ChevronLeftIcon } from 'react-native-heroicons/outline'
 import { HeartIcon } from 'react-native-heroicons/solid'
 import { useNavigation, useRoute } from '@react-navigation/native'
 import { LinearGradient } from 'expo-linear-gradient'
+import Cast from '../components/cast'
+import MovieList from '../components/movieList'
 
 var { width, height } = Dimensions.get('window');
 const ios = Platform.OS === "ios";
@@ -13,6 +15,8 @@ const topMargin = ios ? '' : 'mt-3';
 function MovieScreen() {
     const { params: item } = useRoute();
     const [isFavourite, setIsFavourite] = useState(false);
+    const [cast, setCast] = useState([1,2,3,4,5]);
+    const [similarMovie, setSimilarMovie] = useState([1,2,3,4,5,6]);
     const navigation = useNavigation();
     let movieName = 'Ant-Man and the Wasp: Quantumania';
     return (
@@ -83,6 +87,11 @@ function MovieScreen() {
                 </Text>
             </View>
 
+            {/* Cast */}
+            <Cast navigation={navigation} cast={cast} />
+
+            {/* SimilarMovies */}
+            <MovieList title={'Similar Movies'} data={similarMovie} hideSeeAll={true} />
         </ScrollView>
     )
 }
