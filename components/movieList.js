@@ -1,7 +1,8 @@
 import React from 'react'
-import { Dimensions, Image, ScrollView, Text, TouchableNativeFeedback, TouchableOpacity, View } from 'react-native'
+import { Dimensions, Image, ScrollView, Text, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native'
 import { styles } from '../theme'
 import { useNavigation } from '@react-navigation/native';
+import { fallbackMoviePoster, image185 } from '../api/movieDb';
 
 var { width, height } = Dimensions.get('window');
 
@@ -30,20 +31,20 @@ function MovieList({ title, data, hideSeeAll }) {
                 {
                     data.map((item, index) => {
                         return (
-                            <TouchableNativeFeedback key={index} onPress={() => navigation.push('Movie', item)}>
+                            <TouchableWithoutFeedback key={index} onPress={() => navigation.push('Movie', item)}>
                                 <View className="space-y-1 mr-4">
                                     <Image
-                                        source={require('../assets/images/moviePoster-1.jpg')}
+                                        source={{ uri: image185(item.poster_path) || fallbackMoviePoster }}
                                         className="rounded-3xl"
                                         style={{ width: width * 0.33, height: height * 0.22 }}
                                     />
                                     <Text className="text-neutral-300 text-sm">
                                         {
-                                            movieName.length > 14 ? movieName.substring(0, 14) + '...' : movieName
+                                            item.title?.length > 14 ? item.title.substring(0, 14) + '...' : item.title
                                         }
                                     </Text>
                                 </View>
-                            </TouchableNativeFeedback>
+                            </TouchableWithoutFeedback>
                         )
                     })
                 }

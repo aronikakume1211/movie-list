@@ -1,23 +1,50 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Dimensions, Image, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 // import { ios, styles } from '../theme'
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
 import { HeartIcon } from 'react-native-heroicons/solid';
 import { ChevronLeftIcon } from 'react-native-heroicons/outline';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { styles } from '../theme';
 import MovieList from '../components/movieList';
 import Loading from '../components/loading';
+import { fetchPersonDetails, fetchPersonMovies, image185 } from '../api/movieDb';
 
 var { width, height } = Dimensions.get('window');
 const ios = Platform.OS === "ios";
 const verticalMargin = ios ? '' : 'my-3';
 
 const PersonScreen = () => {
+    const { params: item } = useRoute();
     const navigation = useNavigation();
     const [isFavourite, toggleFavourite] = useState(false);
     const [personMovieList, setPersonMovieList] = useState([1, 2, 3, 4, 5, 6]);
     const [loading, setLoading] = useState(false);
+    const [person, setPerson] = useState({})
+    useEffect(() => {
+        setLoading(true);
+        getPersonDetails(item.id);
+        getPersonMoviesList(item.id);
+
+    }, [item])
+
+    const getPersonDetails = async (id) => {
+        const data = await fetchPersonDetails(id);
+        if (data) {
+            setPerson(data);
+            setLoading(false);
+            console.log('person', person);
+        }
+    }
+
+    const getPersonMoviesList = async id => {
+        const data = await fetchPersonMovies(id);
+        if (data) {
+            setPersonMovieList(data.cast);
+        }
+    }
+
+
     return (
         <ScrollView className="bg-neutral-900 flex-1" contentContainerStyle={{ paddingBottom: 20 }}>
             {/* back button */}
@@ -46,7 +73,7 @@ const PersonScreen = () => {
                                 }}
                             >
                                 <View className="items-center rounded-full overflow-hidden h-72 w-72 border-2 border-neutral-100 bg-black">
-                                    <Image source={require('../assets/images/actor-1.webp')}
+                                    <Image source={{ uri: image185(person?.profile_path) }}
                                         style={{ height: '100%', width: '100%' }}
                                     />
                                 </View>
@@ -54,43 +81,44 @@ const PersonScreen = () => {
 
                             <View className="mt-6">
                                 <Text className="text-3xl text-white font-bold text-center">
-                                    Keanu Reeves
+                                    {person?.name}
                                 </Text>
                                 <Text className="text-base text-neutral-500 text-center">
-                                    London, United Kingdom
+                                    {person?.place_of_birth}
                                 </Text>
                             </View>
                             <View className="mx-3 p-4 mt-6 flex-row justify-between items-center bg-neutral-700 rounded-full">
                                 <View className="border-r-2 border-r-neutral-400 px-2 items-center">
                                     <Text className="text-white font-semibold">Gender</Text>
-                                    <Text className="text-neutral-400 text-sm">Male</Text>
+                                    <Text className="text-neutral-400 text-sm">{(person?.gender === 1) ? 'Female' : 'Male'}</Text>
                                 </View>
                                 <View className="border-r-2 border-r-neutral-400 px-2 items-center">
                                     <Text className="text-white font-semibold">Birthday</Text>
-                                    <Text className="text-neutral-400 text-sm">1995-04-12</Text>
+                                    <Text className="text-neutral-400 text-sm">{person?.birthday}</Text>
                                 </View>
                                 <View className="border-r-2 border-r-neutral-400 px-2 items-center">
                                     <Text className="text-white font-semibold">Known for</Text>
-                                    <Text className="text-neutral-400 text-sm">Acting</Text>
+                                    <Text className="text-neutral-400 text-sm">{person?.known_for_department}</Text>
                                 </View>
                                 <View className=" px-2 items-center">
                                     <Text className="text-white font-semibold">Popularity</Text>
-                                    <Text className="text-neutral-400 text-sm">64.23</Text>
+                                    <Text className="text-neutral-400 text-sm">{person?.popularity?.toFixed(2)}</Text>
                                 </View>
                             </View>
                             <View className="my-6 mx-4 space-y-2">
                                 <Text className="text-white text-lg">Biography</Text>
                                 <Text className="text-neutral-400 tracking-wide">
-                                    Alban Lenoir (born 16 December 1980) is a French actor, screenwriter and stuntman.
-                                    He was nominated for a Lumières Award for his leading role in the film French Blood (2015).
-                                    As a stuntman, he has worked on Les Brigades du Tigre (2006), Taken (2008), Hero Corp (2008-2010),
-                                    The Princess of Montpensier (2010), Outside the Law (2010), Point Blank (2010), Erased (2012).
+                                    {
+                                        person?.biography ? person?.biography : 'No biography available'
+                                    }
+
                                 </Text>
                             </View>
 
                             {/* Movie Lists */}
-
-                            <MovieList title={'Movies'} hideSeeAll={true} data={personMovieList} />
+                            {
+                                personMovieList && <MovieList title={'Movies'} hideSeeAll={true} data={personMovieList} />
+                            }
                         </View>
                     )
             }

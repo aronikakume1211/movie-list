@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { Dimensions, Image, Platform, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { styles, theme } from '../theme'
@@ -9,6 +9,7 @@ import { LinearGradient } from 'expo-linear-gradient'
 import Cast from '../components/cast'
 import MovieList from '../components/movieList'
 import Loading from '../components/loading'
+import { fetchMovieCredits, fetchMovieDetails, fetchSimilarMovies, image500 } from '../api/movieDb'
 
 var { width, height } = Dimensions.get('window');
 const ios = Platform.OS === "ios";
@@ -19,8 +20,40 @@ function MovieScreen() {
     const [cast, setCast] = useState([1, 2, 3, 4, 5]);
     const [similarMovie, setSimilarMovie] = useState([1, 2, 3, 4, 5, 6]);
     const [loading, setLoading] = useState(false);
+    const [movie, setMovie] = useState({})
+
     const navigation = useNavigation();
     let movieName = 'Ant-Man and the Wasp: Quantumania';
+    useEffect(() => {
+        setLoading(true);
+        getMovieDetails(item.id);
+        getMovieCasts(item.id);
+        getSimilarMovies(item.id);
+        console.log(item.id);
+    }, [item])
+    const getMovieDetails = async (id) => {
+        const data = await fetchMovieDetails(id);
+        if (data) {
+            setMovie(data);
+            setLoading(false);
+        }
+    }
+    const getMovieCasts = async (id) => {
+        const data = await fetchMovieCredits(id);
+        if (data) {
+            setCast(data.cast);
+            console.log('cast', cast);
+        }
+    }
+
+    const getSimilarMovies = async (id) => {
+        const data = await fetchSimilarMovies(id);
+        if (data) {
+            setSimilarMovie(data.results);
+            console.log('similar', data);
+        }
+    }
+
     return (
         <ScrollView
             contentContainerStyle={{ paddingBottom: 20 }}
@@ -42,7 +75,8 @@ function MovieScreen() {
                         (
                             <View>
                                 <Image
-                                    source={require('../assets/images/moviePoster-1.jpg')}
+                                    // source={require('../assets/images/moviePoster-1.jpg')}
+                                    source={{ uri: image500(movie?.poster_path) }}
                                     style={{ width, height: height * 0.55 }}
                                 />
                                 <LinearGradient
@@ -62,38 +96,31 @@ function MovieScreen() {
                 {/* Title */}
                 <Text className="text-white text-center text-3xl font-bold tracking-wider">
                     {
-                        movieName
+                        movie.title?.length > 14 ? movie.title.substring(0, 14) + '...' : movie.title
                     }
                 </Text>
                 {/* status, realse, runtime */}
                 <Text className="text-neutral-400 font-semibold text-base text-center">
-                    Released . 2023 . 130 min
+                    Released • {movie.release_date?.toString().split("-")[0]} • {movie?.runtime} min
                 </Text>
                 {/* generes */}
                 <View className="flex-row flex-wrap justify-center mx-4 space-x-2">
-                    <Text className="text-neutral-400 font-semibold text-base text-center">
-                        Action .
-                    </Text>
-                    <Text className="text-neutral-400 font-semibold text-base text-center">
-                        Thrill .
-                    </Text>
-                    <Text className="text-neutral-400 font-semibold text-base text-center">
-                        Comedy
-                    </Text>
+                    {
+                        movie.genres?.map((genre, index) => {
+                            let showDot = index + 1 != movie.genres.length;
+                            return (
+                                <Text key={index} className="text-neutral-400 font-semibold text-base text-center">
+                                    {genre.name} {showDot ? '•' : ''}
+                                </Text>
+                            )
+                        })
+                    }
+
                 </View>
 
                 {/* description */}
                 <Text className="text-neutral-400 mx-4 tracking-wide">
-                    g for one of Ethiopia’s largest exporters for many years s
-                    he set up Ephtah with the intention of empowering women fa
-                    rmers and breaking down the barriers holding them back. As Q
-                    grade certfified cupper, she is obsessed with finding the b
-                    est quality coffee in Ethiopia. She cups every lot which Ep
-                    htah buys and exports. Wubit believes in the enormous poten
-                    tial of the Ethiopian coffee sector. She is convinced that
-                    by taking a holistic approach, with
-                    the partnership of clients, the coffee sector can
-                    be the main driver of change in Ethiopia.
+                    {movie.overview}
                 </Text>
             </View>
 
