@@ -125,10 +125,10 @@ function MovieScreen() {
             </View>
 
             {/* Cast */}
-            <Cast navigation={navigation} cast={cast} />
+            {cast.length > 0 && <Cast navigation={navigation} cast={cast} />}
 
             {/* SimilarMovies */}
-            <MovieList title={'Similar Movies'} data={similarMovie} hideSeeAll={true} />
+            {similarMovie.length > 0 && <MovieList title={'Similar Movies'} data={similarMovie} hideSeeAll={true} />}
         </ScrollView>
     )
 }
